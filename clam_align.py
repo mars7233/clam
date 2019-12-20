@@ -21,13 +21,21 @@ list_dir.sort(key=lambda x: int(x[:-4]))
 # print(list_dir)
 
 
-def img_match(img1, img2, index):
+def img_match(img1, img2, file1,file2):
     # img1 = cv2.imread(
     #     '/Users/mamingjun/Documents/School/Science/Clam/BAPL-3d-cut-png/1.png')
     # img2 = cv2.imread(
     #     '/Users/mamingjun/Documents/School/Science/Clam/BAPL-3d-cut-png/2.png')
     # gray = img1
     # gray2 = img2
+
+    match_path = output_path+'/match'
+    match_folder = os.path.exists(match_path)
+    if not match_folder:
+        os.makedirs(match_path)
+        print("---  new folder "+match_path+"...  ---")
+    else:
+        print("---  There is this folder!  ---")
 
     start_time = time.time()
     ret, img1_binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
@@ -37,7 +45,7 @@ def img_match(img1, img2, index):
 
     # ret, img1_binary = cv2.threshold(img1_binary, 150, 255, cv2.THRESH_BINARY_INV)
     # ret, img2_binary = cv2.threshold(img2_binary, 150, 255, cv2.THRESH_BINARY_INV)
-    k = np.ones((3,3),np.uint8)
+    k = np.ones((2,2),np.uint8)
     img1_open = cv2.morphologyEx(img1_binary,cv2.MORPH_OPEN,k)
     img2_open = cv2.morphologyEx(img2_binary,cv2.MORPH_OPEN,k)
 
@@ -65,6 +73,8 @@ def img_match(img1, img2, index):
         good_2 = np.expand_dims(good, 1)
         # matching = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good_2[:20], None, flags=2)
         matching = cv2.drawMatchesKnn(img1_open, kp1, img2_open, kp2, good_2[:20], None, flags=2)
+
+        cv2.imwrite(match_path+'/'+ file1+'.png'+ '和'+file2+'.png', matching)
 
         # if len(good) > MIN_MATCH_COUNT:
         # 获取关键点的坐标
@@ -98,22 +108,13 @@ def img_match(img1, img2, index):
         print("Error:"+str(e))
         flag = False
 
-    match_path = output_path+'/match'
-    match_folder = os.path.exists(match_path)
-    if not match_folder:
-        os.makedirs(match_path)
-        print("---  new folder "+match_path+"...  ---")
-    else:
-        print("---  There is this folder!  ---")
 
     # 输出
     if np.any(H == 0):
         print("Error")
         flag = False
     else:
-        cv2.imwrite(output_path+'/'+str(index+1)+'.png', result)
-        cv2.imwrite(match_path+'/'+str(index+1) +
-                    '和'+str(index+2)+'.png', matching)
+        cv2.imwrite(output_path+'/'+file2+'.png', result)
     end_time = time.time()
     print("耗时："+str(end_time-start_time)+"秒")
     return result, flag
@@ -140,7 +141,8 @@ def sift_main():
             #     img1 = cv2.imread('./BAPL-3d-cut-png/'+item1)
             img2 = cv2.imread('./BAPL-3d-cut-png/'+item2)
 
-            result = img_match(img1, img2, i+1)
+            # result = img_match(img1, img2, i+1)
+            result = img_match(img1, img2, item1.split('.')[0],item2.split('.')[0])
             if np.any(result[1] == False):
                 try:
                     print(len(img_list))
@@ -183,7 +185,7 @@ def main():
     cv2.imwrite(output_path+'/img_open1.png', img1)
     cv2.imwrite(output_path+'/img_open2.png', img2)
 
-    img = img_match(img1,img2,1)[0]
+    img = img_match(img1,img2,1,2)[0]
     
 
     # gray = cv2.cvtColor(img1, cv2.COLOR_BAYER_BG2GRAY)
