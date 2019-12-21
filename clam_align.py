@@ -10,7 +10,8 @@ MIN_MATCH_COUNT = 50
 path = 'e:\\BAPL-3d-cut\\'
 
 now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-output_path = "./output/"+str(now)
+# output_path = "./output/"+str(now)
+output_path = 'E:\\BAPL-3d-output\\' + str(now)
 
 
 img_list = []
@@ -30,7 +31,9 @@ def img_match(img1, img2, file1,file2):
     # gray = img1
     # gray2 = img2
 
-    match_path = output_path+'/match'
+    # match_path = output_path+'/match'
+    match_path = output_path+'\\match'
+
     match_folder = os.path.exists(match_path)
     if not match_folder:
         os.makedirs(match_path)
@@ -75,7 +78,8 @@ def img_match(img1, img2, file1,file2):
         # matching = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good_2[:20], None, flags=2)
         matching = cv2.drawMatchesKnn(img1_open, kp1, img2_open, kp2, good_2[:20], None, flags=2)
 
-        cv2.imwrite(match_path+'/'+ file1+'.png'+ '和'+file2+'.png', matching)
+        # cv2.imwrite(match_path+'/'+ file1+'.png'+ '和'+file2+'.png', matching)
+        cv2.imwrite(match_path+'\\'+ file1+'.png'+ '和'+file2+'.png', matching)
 
         # if len(good) > MIN_MATCH_COUNT:
         # 获取关键点的坐标
@@ -115,7 +119,8 @@ def img_match(img1, img2, file1,file2):
         print("Error")
         flag = False
     else:
-        cv2.imwrite(output_path+'/'+file2+'.png', result)
+        # cv2.imwrite(output_path+'/'+file2+'.png', result)
+        cv2.imwrite(output_path+'\\'+file2+'.png', result)
     end_time = time.time()
     print("耗时："+str(end_time-start_time)+"秒")
     return result, flag
@@ -129,7 +134,9 @@ def sift_main():
     else:
         print("---  There is this folder!  ---")
 
-    img1 = cv2.imread('./BAPL-3d-cut-png/1.png', cv2.IMREAD_UNCHANGED)
+    # img1 = cv2.imread('./BAPL-3d-cut-png/1.png', cv2.IMREAD_UNCHANGED)
+    img1 = cv2.imread('e:\\BAPL-3d-cut-origin\\Stitched Image_149.png', cv2.IMREAD_UNCHANGED)
+
     img_list = []
     for i, item in enumerate(list_dir):
         if i < len(list_dir):
@@ -138,10 +145,9 @@ def sift_main():
             print("("+str(i+1)+"/"+str(len(list_dir))+")正在处理第"+item1+"和"+item2)
             if i == 0:
                 img1 = img1
-            # else:
-            #     img1 = cv2.imread('./BAPL-3d-cut-png/'+item1)
-            img2 = cv2.imread('./BAPL-3d-cut-png/'+item2)
-
+            # img2 = cv2.imread('./BAPL-3d-cut-png/'+item2)
+            img2 = cv2.imread('e:\\BAPL-3d-cut-origin\\'+item2.split('.')[0]+'.png',cv2.IMREAD_UNCHANGED)
+            
             # result = img_match(img1, img2, i+1)
             result = img_match(img1, img2, item1.split('.')[0],item2.split('.')[0])
             if np.any(result[1] == False):
