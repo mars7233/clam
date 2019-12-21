@@ -5,6 +5,9 @@ import numpy as np
 from PIL import Image
 from datetime import datetime
 
+
+program_start = time.time()
+
 MIN_MATCH_COUNT = 50
 # path = './BAPL-3d-cut-origin'
 path = 'e:\\BAPL-3d-cut\\'
@@ -49,6 +52,8 @@ def img_match(img1, img2, file1,file2):
 
     # ret, img1_binary = cv2.threshold(img1_binary, 150, 255, cv2.THRESH_BINARY_INV)
     # ret, img2_binary = cv2.threshold(img2_binary, 150, 255, cv2.THRESH_BINARY_INV)
+
+    # 使用核为2*2的开处理
     k = np.ones((2,2),np.uint8)
     img1_open = cv2.morphologyEx(img1_binary,cv2.MORPH_OPEN,k)
     img2_open = cv2.morphologyEx(img2_binary,cv2.MORPH_OPEN,k)
@@ -79,7 +84,7 @@ def img_match(img1, img2, file1,file2):
         matching = cv2.drawMatchesKnn(img1_open, kp1, img2_open, kp2, good_2[:20], None, flags=2)
 
         # cv2.imwrite(match_path+'/'+ file1+'.png'+ '和'+file2+'.png', matching)
-        cv2.imwrite(match_path+'\\'+ file1+'.png'+ '和'+file2+'.png', matching)
+        cv2.imwrite(match_path+'\\'+ file1+'.png'+ ' and '+file2+'.png', matching)
 
         # if len(good) > MIN_MATCH_COUNT:
         # 获取关键点的坐标
@@ -122,7 +127,7 @@ def img_match(img1, img2, file1,file2):
         # cv2.imwrite(output_path+'/'+file2+'.png', result)
         cv2.imwrite(output_path+'\\'+file2+'.png', result)
     end_time = time.time()
-    print("耗时："+str(end_time-start_time)+"秒")
+    print("该操作耗时："+str(round(end_time-start_time,2))+"秒, "+ "程序已运行了："+str(round((end_time-program_start)/60,2))+"分")
     return result, flag
 
 
@@ -131,8 +136,6 @@ def sift_main():
     if not result_folder:
         os.makedirs(output_path)
         print("---  new folder "+output_path+"...  ---")
-    else:
-        print("---  There is this folder!  ---")
 
     # img1 = cv2.imread('./BAPL-3d-cut-png/1.png', cv2.IMREAD_UNCHANGED)
     img1 = cv2.imread('e:\\BAPL-3d-cut-origin\\Stitched Image_149.png', cv2.IMREAD_UNCHANGED)
@@ -147,7 +150,7 @@ def sift_main():
                 img1 = img1
             # img2 = cv2.imread('./BAPL-3d-cut-png/'+item2)
             img2 = cv2.imread('e:\\BAPL-3d-cut-origin\\'+item2.split('.')[0]+'.png',cv2.IMREAD_UNCHANGED)
-            
+
             # result = img_match(img1, img2, i+1)
             result = img_match(img1, img2, item1.split('.')[0],item2.split('.')[0])
             if np.any(result[1] == False):
