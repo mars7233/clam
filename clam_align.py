@@ -15,13 +15,15 @@ path = 'e:\\BAPL-3d-cut-origin\\'
 now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 # output_path = "./output/"+str(now)
 output_path = 'E:\\BAPL-3d-output\\' + str(now)
+# output_path = 'E:\\BAPL-3d-output\\2019-12-21-17-15-51'
 
 
 img_list = []
 list_dir = os.listdir(path)
-# print(list_dir)
+
 # list_dir.sort(key= lambda x: int(x.split('.')[0]))
 list_dir.sort(key=lambda x: int(x.split('_')[1][:-4]))
+# list_dir = list_dir[150:]
 
 # print(list_dir)
 
@@ -30,13 +32,10 @@ def img_match(img1, img2, file1,file2):
 
     # match_path = output_path+'/match'
     match_path = output_path+'\\match'
-
     match_folder = os.path.exists(match_path)
     if not match_folder:
         os.makedirs(match_path)
         print("---  new folder "+match_path+"...  ---")
-    else:
-        print("---  There is this folder!  ---")
 
     start_time = time.time()
     ret, img1_binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
@@ -44,8 +43,10 @@ def img_match(img1, img2, file1,file2):
     # img1_binary = cv2.erode(img1_binary,(7,7))
     # img2_binary = cv2.erode(img2_binary,(7,7))
 
-    # 使用核为2*2的开处理
-    k = np.ones((2,2),np.uint8)
+    if img1.shape[1]<5000 and img2.shape[1] > 5000:
+        k = np.ones((3,3),np.uint8)    
+    else:
+        k = np.ones((2,2),np.uint8)
     img1_open = cv2.morphologyEx(img1_binary,cv2.MORPH_OPEN,k)
     img2_open = cv2.morphologyEx(img2_binary,cv2.MORPH_OPEN,k)
 
@@ -87,6 +88,7 @@ def img_match(img1, img2, file1,file2):
         print(H)
 
         result = cv2.warpAffine(img2, H, (img2.shape[1], img2.shape[0]))
+        result1 = test_add(result)
         # result = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
 
     except EOFError as e:
@@ -100,7 +102,7 @@ def img_match(img1, img2, file1,file2):
         flag = False
     else:
         # cv2.imwrite(output_path+'/'+file2+'.png', result)
-        cv2.imwrite(output_path+'\\'+file2+'.png', result)
+        cv2.imwrite(output_path+'\\'+file2+'.png', result1)
     end_time = time.time()
     print("该操作耗时："+str(round(end_time-start_time,2))+"秒, "+ "程序已运行了："+str(round((end_time-program_start)/60,2))+"分")
     return result, flag
@@ -113,7 +115,8 @@ def sift_main():
         print("---  new folder "+output_path+"...  ---")
 
     # img1 = cv2.imread('./BAPL-3d-cut-png/1.png', cv2.IMREAD_UNCHANGED)
-    img1 = cv2.imread('e:\\BAPL-3d-cut-origin\\Stitched Image_149.png', cv2.IMREAD_UNCHANGED)
+    img1 = cv2.imread('e:\\BAPL-3d-cut-origin\\'+list_dir[0], cv2.IMREAD_UNCHANGED)
+    # img1 = cv2.imread('E:\\BAPL-3d-output\\2019-12-21-17-15-51\\'+list_dir[0],cv2.IMREAD_UNCHANGED)
 
     img_list = []
     for i, item in enumerate(list_dir):
@@ -142,39 +145,47 @@ def sift_main():
 
 
 
-sift_main()
-
 
 def outline_match(img1, img2, index):
     print(2333)
+
+def test_add(img2):
+    img1 = np.zeros((7000, 7000), np.uint8)
+    rows,cols = img2.shape
+
+    img1[1500:rows+1500, 1500:cols+1500 ] = img2
+    
+    return img1
+
 
 def main():
     result_folder = os.path.exists(output_path)
     if not result_folder:
         os.makedirs(output_path)
         print("---  new folder "+output_path+"...  ---")
-    else:
-        print("---  There is this folder!  ---")
 
-    img1 = cv2.imread('./BAPL-3d-cut-png/161.png', cv2.IMREAD_UNCHANGED)
-    img2 = cv2.imread('./BAPL-3d-cut-png/162.png', cv2.IMREAD_UNCHANGED)
+    img1 = cv2.imread('e:\\BAPL-3d-cut-origin\\Stitched Image_789.png', cv2.IMREAD_UNCHANGED)
+    img2 = cv2.imread('e:\\BAPL-3d-cut-origin\\Stitched Image_805.png', cv2.IMREAD_UNCHANGED)
 
-    ret, img1_binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
-    ret, img2_binary = cv2.threshold(img2, 150, 255, cv2.THRESH_BINARY_INV)
+    # ret, img1_binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
+    # ret, img2_binary = cv2.threshold(img2, 150, 255, cv2.THRESH_BINARY_INV)
 
     # cv2.imwrite(output_path+'/img1_binary.png', img1_binary)
     # cv2.imwrite(output_path+'/img2_binary.png', img2_binary)
-    k = np.ones((3,3),np.uint8)
-    img1 = cv2.morphologyEx(img1_binary,cv2.MORPH_OPEN,k)
-    img2 = cv2.morphologyEx(img2_binary,cv2.MORPH_OPEN,k)
-    cv2.imwrite(output_path+'/img_open1.png', img1)
-    cv2.imwrite(output_path+'/img_open2.png', img2)
+    # k = np.ones((3,3),np.uint8)
+    # img1 = cv2.morphologyEx(img1,cv2.MORPH_OPEN,k)
+    # img2 = cv2.morphologyEx(img2,cv2.MORPH_OPEN,k)
+    # cv2.imwrite(output_path+'/img_open1.png', img1)
+    # cv2.imwrite(output_path+'/img_open2.png', img2)
 
-    img = img_match(img1,img2,1,2)[0]
+    # img = img_match(img1,img2,'1','2')[0]
     
 
+    # 找轮廓
     # gray = cv2.cvtColor(img1, cv2.COLOR_BAYER_BG2GRAY)
-    # img = np.zeros((img1.shape[0], img1.shape[1], 3), np.uint8)
+    img = np.zeros((6000, 6000), np.uint8)
+    img_add = test_add(img1)
+    cv2.imwrite(output_path+'/img_add.png', img_add)
     # # img.fill(255)
     # # cv2.imwrite(output_path+'/img.png', img)
     # ret, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
@@ -193,4 +204,7 @@ def main():
     # image= cv2.drawContours(img,[points],-1,(255,255,255),3)
     # cv2.imwrite(output_path+'/1.png', image)
 
+
+sift_main()
 # main()
+
