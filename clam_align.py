@@ -6,7 +6,8 @@ from PIL import Image
 from datetime import datetime
 
 MIN_MATCH_COUNT = 50
-path = './BAPL-3d-cut-png'
+# path = './BAPL-3d-cut-origin'
+path = 'e:\\BAPL-3d-cut\\'
 
 now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 output_path = "./output/"+str(now)
@@ -16,7 +17,7 @@ img_list = []
 list_dir = os.listdir(path)
 # print(list_dir)
 # list_dir.sort(key= lambda x: int(x.split('.')[0]))
-list_dir.sort(key=lambda x: int(x[:-4]))
+list_dir.sort(key=lambda x: int(x.split('_')[1][:-4]))
 
 # print(list_dir)
 
@@ -51,7 +52,7 @@ def img_match(img1, img2, file1,file2):
 
     flag = True
     try:
-        sift = cv2.xfeatures2d.SIFT_create()
+        # sift = cv2.xfeatures2d.SIFT_create()
         # detector = cv2.ORB_create()
         detector = cv2.AKAZE_create()
         kp1, des1 = detector.detectAndCompute(img2_open, None)
