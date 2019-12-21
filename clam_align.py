@@ -10,7 +10,7 @@ program_start = time.time()
 
 MIN_MATCH_COUNT = 50
 # path = './BAPL-3d-cut-origin'
-path = 'e:\\BAPL-3d-cut\\'
+path = 'e:\\BAPL-3d-cut-origin\\'
 
 now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 # output_path = "./output/"+str(now)
@@ -27,12 +27,6 @@ list_dir.sort(key=lambda x: int(x.split('_')[1][:-4]))
 
 
 def img_match(img1, img2, file1,file2):
-    # img1 = cv2.imread(
-    #     '/Users/mamingjun/Documents/School/Science/Clam/BAPL-3d-cut-png/1.png')
-    # img2 = cv2.imread(
-    #     '/Users/mamingjun/Documents/School/Science/Clam/BAPL-3d-cut-png/2.png')
-    # gray = img1
-    # gray2 = img2
 
     # match_path = output_path+'/match'
     match_path = output_path+'\\match'
@@ -49,9 +43,6 @@ def img_match(img1, img2, file1,file2):
     ret, img2_binary = cv2.threshold(img2, 150, 255, cv2.THRESH_BINARY_INV)
     # img1_binary = cv2.erode(img1_binary,(7,7))
     # img2_binary = cv2.erode(img2_binary,(7,7))
-
-    # ret, img1_binary = cv2.threshold(img1_binary, 150, 255, cv2.THRESH_BINARY_INV)
-    # ret, img2_binary = cv2.threshold(img2_binary, 150, 255, cv2.THRESH_BINARY_INV)
 
     # 使用核为2*2的开处理
     k = np.ones((2,2),np.uint8)
@@ -78,9 +69,8 @@ def img_match(img1, img2, file1,file2):
         for m, n in matches:
             if m.distance < 0.75 * n.distance:
                 good.append(m)
-            # cv2.drawMatchesKnn expects list of lists as matches
+        # cv2.drawMatchesKnn expects list of lists as matches
         good_2 = np.expand_dims(good, 1)
-        # matching = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good_2[:20], None, flags=2)
         matching = cv2.drawMatchesKnn(img1_open, kp1, img2_open, kp2, good_2[:20], None, flags=2)
 
         # cv2.imwrite(match_path+'/'+ file1+'.png'+ '和'+file2+'.png', matching)
@@ -93,27 +83,12 @@ def img_match(img1, img2, file1,file2):
         dst_pts = np.float32(
             [kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
 
-        # H, mask = cv2.findHomography(src_pts, dst_pts,cv2.RANSAC)  # , cv2.RANSAC, 10)
         H, mask = cv2.estimateAffinePartial2D(src_pts, dst_pts)
         print(H)
 
-        # result = cv2.warpPerspective(img2, H, (img2.shape[1], img2.shape[0]))
         result = cv2.warpAffine(img2, H, (img2.shape[1], img2.shape[0]))
         # result = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
 
-        # wrap = cv2.warpPerspective(img2, H, (img2.shape[1]+img2.shape[1], img2.shape[0]+img2.shape[0]))
-        # result[0:img2.shape[0], 0:img2.shape[1]] = img1
-
-        # rows, cols = np.where(result[:, :, 0] != 0)
-        # min_row, max_row = min(rows), max(rows) + 1
-        # min_col, max_col = min(cols), max(cols) + 1
-        # result = result[min_row:max_row, min_col:max_col, :]  # 去除黑色无用部分
-
-        # alpha_channel = result[:, :, 3]
-        # _, mask = cv.threshold(alpha_channel, 254, 255,
-        #                        cv.THRESH_BINARY)  # binarize mask
-        # color = result[:, :, :3]
-        # new_img = cv.bitwise_not(cv.bitwise_not(color, mask=mask))
     except EOFError as e:
         print("Error:"+str(e))
         flag = False
