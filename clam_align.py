@@ -15,14 +15,14 @@ path = 'e:\\BAPL-3d-cut-origin\\'
 now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 # output_path = "./output/"+str(now)
 output_path = 'E:\\BAPL-3d-output\\' + str(now)
-# output_path = 'E:\\BAPL-3d-output\\2019-12-24-16-39-13'
+output_path = 'E:\\BAPL-3d-output\\2019-12-24-17-22-40'
 
 
 img_list = []
 list_dir = os.listdir(path)
 
 list_dir.sort(key=lambda x: int(x.split('_')[1][:-4]))
-# list_dir = list_dir[157:]
+list_dir = list_dir[157:]
 
 # print(list_dir)
 
@@ -48,6 +48,7 @@ def img_match(img1, img2, file1, file2,pre=True):
     k1 = np.ones((2, 2), np.uint8)
     k2 = np.ones((2, 2), np.uint8) 
     if img1.shape[1] < 5000 and img2.shape[1] > 5000:
+        k2 = np.ones((1, 1), np.uint8)
         k2 = np.ones((5, 5), np.uint8)
         print("k=5*5")
 
@@ -61,6 +62,10 @@ def img_match(img1, img2, file1, file2,pre=True):
     detector = cv2.AKAZE_create()
     kp1, des1 = detector.detectAndCompute(img2_open, None)
     kp2, des2 = detector.detectAndCompute(img1_open, None)
+    if img1.shape[1] < 5000 and img2.shape[1] > 5000:
+        kp1, des1 = detector.detectAndCompute(img2, None)
+        kp2, des2 = detector.detectAndCompute(img1, None)
+        
     # img1=cv2.drawKeypoints(gray,kp1,img)
     # img2=cv2.drawKeypoints(gray2,kp2,img2)
 
@@ -115,7 +120,7 @@ def sift_main():
         print("---  new folder "+output_path+"...  ---")
 
     img1 = cv2.imread('e:\\BAPL-3d-cut-origin\\'+list_dir[0], cv2.IMREAD_UNCHANGED)
-    # img1 = cv2.imread('E:\\BAPL-3d-output\\2019-12-24-16-39-13\\origin\\' +list_dir[0], cv2.IMREAD_UNCHANGED)
+    img1 = cv2.imread('E:\\BAPL-3d-output\\2019-12-24-17-22-40\\origin\\' +list_dir[0], cv2.IMREAD_UNCHANGED)
 
     img_list = []
     for i, item in enumerate(list_dir):
@@ -157,7 +162,7 @@ def main():
         print("---  new folder "+output_path+"...  ---")
 
     img1 = cv2.imread(
-        'E:\\BAPL-3d-output\\2019-12-24-16-39-13\\origin\\Stitched Image_789.png', cv2.IMREAD_UNCHANGED)
+        'E:\\BAPL-3d-output\\2019-12-24-17-22-40\\origin\\Stitched Image_789.png', cv2.IMREAD_UNCHANGED)
     img2 = cv2.imread(
         'e:\\BAPL-3d-cut-origin\\Stitched Image_805.png', cv2.IMREAD_UNCHANGED)
 
@@ -166,7 +171,7 @@ def main():
 
 
     k = np.ones((2,2),np.uint8)
-    k2 = np.ones((5,5),np.uint8)
+    k2 = np.ones((6,6),np.uint8)
     img1_open = cv2.morphologyEx(img1_binary,cv2.MORPH_OPEN,k)
     img2_open = cv2.morphologyEx(img2_binary,cv2.MORPH_OPEN,k2)
     cv2.imwrite(output_path+'/img_open1.png', img1_open)
