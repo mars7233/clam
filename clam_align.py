@@ -15,7 +15,7 @@ path = 'e:\\BAPL-3d-cut-origin\\'
 now = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
 # output_path = "./output/"+str(now)
 output_path = 'E:\\BAPL-3d-output\\' + str(now)
-# output_path = 'E:\\BAPL-3d-output\\2019-12-21-18-28-33'
+# output_path = 'E:\\BAPL-3d-output\\2019-12-24-16-39-13'
 
 
 img_list = []
@@ -27,7 +27,7 @@ list_dir.sort(key=lambda x: int(x.split('_')[1][:-4]))
 # print(list_dir)
 
 
-def img_match(img1, img2, file1, file2):
+def img_match(img1, img2, file1, file2,pre=True):
     start_time = time.time()
     
     match_path = output_path+'\\match'
@@ -40,24 +40,25 @@ def img_match(img1, img2, file1, file2):
     if not origin_folder:
         os.makedirs(origin_path)
         print("---  new folder "+origin_path+"...  ---")
-    
+
     ret, img1_binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
     ret, img2_binary = cv2.threshold(img2, 150, 255, cv2.THRESH_BINARY_INV)
     # img1_binary = cv2.erode(img1_binary,(7,7))
     # img2_binary = cv2.erode(img2_binary,(7,7))
-
+    k1 = np.ones((2, 2), np.uint8)
+    k2 = np.ones((2, 2), np.uint8) 
     if img1.shape[1] < 5000 and img2.shape[1] > 5000:
-        k = np.ones((3, 3), np.uint8)
-    else:
-        k = np.ones((2, 2), np.uint8)
-    img1_open = cv2.morphologyEx(img1_binary, cv2.MORPH_OPEN, k)
-    img2_open = cv2.morphologyEx(img2_binary, cv2.MORPH_OPEN, k)
+        k2 = np.ones((5, 5), np.uint8)
+        print("k=5*5")
+
+    img1_open = cv2.morphologyEx(img1_binary, cv2.MORPH_OPEN, k1)
+    img2_open = cv2.morphologyEx(img2_binary, cv2.MORPH_OPEN, k2)
 
     flag = True
 
     # sift = cv2.xfeatures2d.SIFT_create()
     # detector = cv2.ORB_create()
-    # detector = cv2.AKAZE_create()
+    detector = cv2.AKAZE_create()
     kp1, des1 = detector.detectAndCompute(img2_open, None)
     kp2, des2 = detector.detectAndCompute(img1_open, None)
     # img1=cv2.drawKeypoints(gray,kp1,img)
@@ -88,13 +89,14 @@ def img_match(img1, img2, file1, file2):
     H, mask = cv2.estimateAffinePartial2D(src_pts, dst_pts)
     print(H)
 
+    result_origin = cv2.warpAffine(img2, H, (img2.shape[1], img2.shape[0]))
+    result = cv2.warpAffine(img2_open, H, (img2_open.shape[1], img2_open.shape[0]))
+
     if np.any(H == 0):
         print("Error")
         flag = False
-    else:
-        result_origin = cv2.warpAffine(img2, H, (img2.shape[1], img2.shape[0]))
-        result = cv2.warpAffine(img2_open, H, (img2_open.shape[1], img2_open.shape[0]))
-        
+        return result_origin, flag
+    else:    
         # 输出    
         # cv2.imwrite(output_path+'/'+file2+'.png', result)
         result1 = test_add(result)
@@ -112,9 +114,8 @@ def sift_main():
         os.makedirs(output_path)
         print("---  new folder "+output_path+"...  ---")
 
-    # img1 = cv2.imread('./BAPL-3d-cut-png/1.png', cv2.IMREAD_UNCHANGED)
     img1 = cv2.imread('e:\\BAPL-3d-cut-origin\\'+list_dir[0], cv2.IMREAD_UNCHANGED)
-    # img1 = cv2.imread('E:\\BAPL-3d-output\\2019-12-21-17-15-51\\' +list_dir[0], cv2.IMREAD_UNCHANGED)
+    # img1 = cv2.imread('E:\\BAPL-3d-output\\2019-12-24-16-39-13\\origin\\' +list_dir[0], cv2.IMREAD_UNCHANGED)
 
     img_list = []
     for i, item in enumerate(list_dir):
@@ -141,10 +142,6 @@ def sift_main():
                 img_list.append(img1)
 
 
-def outline_match(img1, img2, index):
-    print(2333)
-
-
 def test_add(img_n):
     img1 = np.zeros((8000, 8000), np.uint8)
     rows, cols = img_n.shape
@@ -160,41 +157,24 @@ def main():
         print("---  new folder "+output_path+"...  ---")
 
     img1 = cv2.imread(
-        'e:\\BAPL-3d-cut-origin\\Stitched Image_789.png', cv2.IMREAD_UNCHANGED)
+        'E:\\BAPL-3d-output\\2019-12-24-16-39-13\\origin\\Stitched Image_789.png', cv2.IMREAD_UNCHANGED)
     img2 = cv2.imread(
         'e:\\BAPL-3d-cut-origin\\Stitched Image_805.png', cv2.IMREAD_UNCHANGED)
 
-    # ret, img1_binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
-    # ret, img2_binary = cv2.threshold(img2, 150, 255, cv2.THRESH_BINARY_INV)
-
-    # cv2.imwrite(output_path+'/img1_binary.png', img1_binary)
-    # cv2.imwrite(output_path+'/img2_binary.png', img2_binary)
-    # k = np.ones((3,3),np.uint8)
-    # img1 = cv2.morphologyEx(img1,cv2.MORPH_OPEN,k)
-    # img2 = cv2.morphologyEx(img2,cv2.MORPH_OPEN,k)
-    # cv2.imwrite(output_path+'/img_open1.png', img1)
-    # cv2.imwrite(output_path+'/img_open2.png', img2)
-
-    # img = img_match(img1,img2,'1','2')[0]
+    ret, img1_binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
+    ret, img2_binary = cv2.threshold(img2, 150, 255, cv2.THRESH_BINARY_INV)
 
 
-    ret, binary = cv2.threshold(img1, 150, 255, cv2.THRESH_BINARY_INV)
+    k = np.ones((2,2),np.uint8)
+    k2 = np.ones((5,5),np.uint8)
+    img1_open = cv2.morphologyEx(img1_binary,cv2.MORPH_OPEN,k)
+    img2_open = cv2.morphologyEx(img2_binary,cv2.MORPH_OPEN,k2)
+    cv2.imwrite(output_path+'/img_open1.png', img1_open)
+    cv2.imwrite(output_path+'/img_open2.png', img2_open)
 
-    img = test_add(binary)
-    cv2.imwrite(output_path+'/1.png', img)
-    mars = np.zeros((8000,8000),np.uint8)
+    img = img_match(img1,img2,'1','2')[0]
 
-    image, contours, hierarchy = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    # x, y, w, h = cv2.boundingRect(contours[0])
-    for item in contours:
-        rect = cv2.minAreaRect(item)
-        points = cv2.boxPoints(rect)
-        points = np.int0(points)
-        image = cv2.drawContours(mars,[points],-1,(255,255,255),10)
-        print(item)
-    # cv2.drawContours(img, (x, y), (x+w, y+h), (255, 255, 255), 2)
-   
-    cv2.imwrite(output_path+'/output.png', mars)
+
 
 
 sift_main()
